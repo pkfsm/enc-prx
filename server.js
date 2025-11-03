@@ -128,7 +128,7 @@ app.get('/cursed/stream.m3u8', async (req, res) => {
 
     // Create encrypted token and redirect to /goat/:token
     const token = encryptText(hls);
-    const proxiedUrl = `${req.protocol}://${req.get('host')}/goat/${token}.m3u8`;
+    const proxiedUrl = `https://${req.get('host')}/goat/${token}.m3u8`;
     return res.redirect(proxiedUrl);
   } catch (err) {
     console.error(err && err.stack || err);
@@ -244,3 +244,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Listening on ${PORT}`);
 });
+
