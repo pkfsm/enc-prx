@@ -108,7 +108,7 @@ async function fetchVkCatalog(form = DEFAULT_FORM, cookieString = DEFAULT_VK_COO
 /* ---------- Endpoint: fetch VK and redirect to encrypted goat ---------- */
 app.get('/cursed/stream.m3u8', async (req, res) => {
   try {
-    // optional: accept owner/url/access_token/cookies via query/body for flexibility
+    // Optional query overrides
     const form = { ...DEFAULT_FORM };
     if (req.query.url) form.url = req.query.url;
     if (req.query.owner_id) form.owner_id = req.query.owner_id;
@@ -117,21 +117,47 @@ app.get('/cursed/stream.m3u8', async (req, res) => {
     const cookies = req.query.cookies || DEFAULT_VK_COOKIES;
     const vkData = await fetchVkCatalog(form, cookies);
 
-    if (!vkData || !vkData.response || !vkData.response.videos || vkData.response.videos.length === 0) {
+    if (
+      !vkData ||
+      !vkData.response ||
+      !vkData.response.videos ||
+      vkData.response.videos.length === 0
+    ) {
       return res.status(500).json({ error: 'No videos found in VK response', raw: vkData });
     }
 
-    // Get first video object's files.hls_live
     const firstVideo = vkData.response.videos[0];
-    const hls = firstVideo && firstVideo.files && firstVideo.files.hls_live;
-    if (!hls) return res.status(500).json({ error: 'hls_live not available on first video', video: firstVideo });
+    const hls = firstVideo?.files?.hls_live;
+    if (!hls) return res.status(500).json({ error: 'hls_live not available', video: firstVideo });
 
-    // Create encrypted token and redirect to /goat/:token
-    const token = encryptText(hls);
-    const proxiedUrl = `https://${req.get('host')}/goat/${token}.m3u8`;
-    return res.redirect(proxiedUrl);
+    // Fetch actual playlist from the source
+    const response = await axios.get(hls, {
+      responseType: 'text',
+      headers: {
+        'User-Agent': req.headers['user-agent'] || 'Mozilla/5.0',
+        'Accept': '*/*',
+        'Referer': hls,
+      },
+      timeout: 15000,
+    });
+
+    const base = hls.substring(0, hls.lastIndexOf('/') + 1);
+    const originalText = response.data;
+
+    // Rewrite internal links → /goat/<enc> (keep .m3u8/.ts suffix)
+    const rewritten = originalText.replace(/^(?!#)(.+)$/gm, (line) => {
+      const absolute = resolveUrl(base, line.trim());
+      const enc = encryptText(absolute);
+      let suffix = '';
+      if (absolute.endsWith('.m3u8')) suffix = '.m3u8';
+      else if (absolute.endsWith('.ts')) suffix = '.ts';
+      return `https://${req.get('host')}/goat/${enc}${suffix}`;
+    });
+
+    res.setHeader('Content-Type', 'application/vnd.apple.mpegurl; charset=utf-8');
+    res.send(rewritten);
   } catch (err) {
-    console.error(err && err.stack || err);
+    console.error(err.stack || err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -244,4 +270,5 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Listening on ${PORT}`);
 });
+
 
