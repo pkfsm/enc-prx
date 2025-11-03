@@ -128,7 +128,7 @@ app.get('/cursed/stream.m3u8', async (req, res) => {
 
     // Create encrypted token and redirect to /goat/:token
     const token = encryptText(hls);
-    const proxiedUrl = `${req.protocol}://${req.get('host')}/goat/${token}`;
+    const proxiedUrl = `${req.protocol}://${req.get('host')}/goat/${token}.m3u8`;
     return res.redirect(proxiedUrl);
   } catch (err) {
     console.error(err && err.stack || err);
@@ -156,64 +156,75 @@ app.get('/cursed/external', (req, res) => {
 });
 
 /* ---------- Core Proxy endpoint: decrypt token, fetch resource, stream or rewrite playlist ---------- */
-app.get('/goat/:token', async (req, res) => {
-  const { token } = req.params;
+/* ---------- Core Proxy endpoint (fixed for .m3u8/.ts appearance) ---------- */
+app.get(/^\/goat\/(.+)$/, async (req, res) => {
+  let token = req.params[0];
   let decodedUrl;
+
   try {
+    // 🧩 Remove cosmetic .m3u8 or .ts suffix before decrypting
+    // (we only strip at the very end)
+    token = token.replace(/\.(m3u8|ts)$/i, '');
+
     decodedUrl = decryptText(token);
   } catch (e) {
+    console.error('Decryption failed:', e.message);
     return res.status(400).send('Invalid token');
   }
 
-  // If it's an m3u8 playlist (playlist or nested), fetch it as text, rewrite URLs to encrypted tokens, and return text
   try {
-    // make request as stream or text depending on content-type
     const response = await axios.get(decodedUrl, {
-      responseType: 'arraybuffer', // we'll inspect content-type
+      responseType: 'arraybuffer',
       headers: {
         'User-Agent': req.headers['user-agent'] || 'Mozilla/5.0',
         'Accept': '*/*',
-        'Referer': decodedUrl, // some servers require referer
-        // add more headers if needed
+        'Referer': decodedUrl,
       },
       maxRedirects: 5,
-      validateStatus: status => status >= 200 && status < 400,
-      timeout: 20000
+      validateStatus: s => s >= 200 && s < 400,
+      timeout: 20000,
     });
 
     const contentType = (response.headers['content-type'] || '').toLowerCase();
     const bodyBuf = Buffer.from(response.data);
 
-    // If playlist (m3u8), rewrite segments and nested m3u8 links
-    if (contentType.includes('mpegurl') || contentType.includes('application/vnd.apple.mpegurl') || decodedUrl.endsWith('.m3u8')) {
+    // 🎵 Handle playlists
+    if (
+      contentType.includes('mpegurl') ||
+      contentType.includes('application/vnd.apple.mpegurl') ||
+      decodedUrl.endsWith('.m3u8')
+    ) {
       const originalText = bodyBuf.toString('utf8');
       const base = decodedUrl.substring(0, decodedUrl.lastIndexOf('/') + 1);
 
-      // Replace every non-comment line that looks like a URL or path (ts, m3u8)
-      const rewritten = originalText.replace(/^(?!#)(.+)$/gm, (match) => {
-        const absolute = resolveUrl(base, match.trim());
-        const tokenForItem = encryptText(absolute);
-        return `${req.protocol}://${req.get('host')}/goat/${tokenForItem}`;
+      const rewritten = originalText.replace(/^(?!#)(.+)$/gm, (line) => {
+        const absolute = resolveUrl(base, line.trim());
+        const enc = encryptText(absolute);
+
+        // Add visual suffix for clarity
+        let suffix = '';
+        if (absolute.endsWith('.m3u8')) suffix = '.m3u8';
+        else if (absolute.endsWith('.ts')) suffix = '.ts';
+
+        return `${req.protocol}://${req.get('host')}/goat/${enc}${suffix}`;
       });
 
       res.setHeader('content-type', 'application/vnd.apple.mpegurl; charset=utf-8');
       return res.send(rewritten);
     }
 
-    // For TS or binary segments or other content: stream the bytes through
-    // Use content-type from original response
+    // 🔁 Binary pass-through (TS, etc.)
     res.setHeader('content-type', response.headers['content-type'] || 'application/octet-stream');
-    // copy through relevant headers (cache control etc.)
     if (response.headers['content-length']) res.setHeader('content-length', response.headers['content-length']);
     if (response.headers['cache-control']) res.setHeader('cache-control', response.headers['cache-control']);
 
     return res.send(bodyBuf);
   } catch (err) {
-    console.error('goat error:', err.message || err);
+    console.error('Proxy error:', err.message);
     if (err.response && err.response.status) {
       return res.status(err.response.status).send(err.response.statusText || 'Upstream error');
     }
-    res.status(500).send('Proxy error');
+    return res.status(500).send('Proxy error');
   }
 });
 
