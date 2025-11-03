@@ -1,7 +1,7 @@
 {
   "name": "vk-hls-proxy",
   "version": "1.0.0",
-  "description": "Secure Node.js webserver to fetch and proxy VKVideo HLS streams with AES encryption",
+  "description": "INFINITE TSUKOYOMI",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -32,3 +32,4 @@
   "author": "Your Name",
   "license": "MIT"
 }
+
