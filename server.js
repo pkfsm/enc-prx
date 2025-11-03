@@ -214,7 +214,7 @@ app.get('/cursed/external', (req, res) => {
     // optionally validate URL
     new URL(rawUrl);
     const token = encryptText(rawUrl);
-    const proxiedUrl = `${req.protocol}://${req.get('host')}/goat/${token}`;
+    const proxiedUrl = `https://${req.get('host')}/goat/${token}`;
     res.json({ proxy: proxiedUrl });
   } catch (e) {
     res.status(400).json({ error: 'Invalid URL' });
@@ -272,7 +272,7 @@ app.get(/^\/goat\/(.+)$/, async (req, res) => {
         if (absolute.endsWith('.m3u8')) suffix = '.m3u8';
         else if (absolute.endsWith('.ts')) suffix = '.ts';
 
-        return `${req.protocol}://${req.get('host')}/goat/${enc}${suffix}`;
+        return `https://${req.get('host')}/goat/${enc}${suffix}`;
       });
 
       res.setHeader('content-type', 'application/vnd.apple.mpegurl; charset=utf-8');
@@ -310,6 +310,7 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Listening on ${PORT}`);
 });
+
 
 
 
