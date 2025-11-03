@@ -14,41 +14,46 @@ app.use(bodyParser.json());
 
 // --- CORS + Security middleware ---
 // --- CORS + Referer protection middleware ---
-const allowedOrigins = [
-  'https://players.akamai.com',        // 🔁 change to your actual site(s)
-  'https://players.akamai.com/',
-  'https://goat-father.onrender.com', // allow your Render domain for API fetches
+// --- CORS + Strict Referer Security Middleware ---
+const allowedDomains = [
+  'https://livepush.io',              // ✅ your main site
+  'https://livepush.io/',
+  'https://ikml.pages.dev',
+  'https://ikml.pages.dev/',
+  'https://bsdstreams.strangled.net',
+  'https://bsdstreams.strangled.net/',
+  'https://teachub.strangled.net',
+  'https://teachub.strangled.net/',
+  'https://goat-father.onrender.com',    // ✅ your Render domain for testing
 ];
 
 app.use((req, res, next) => {
-  const origin = req.headers.origin;
+  const origin = req.headers.origin || '';
   const referer = req.headers.referer || '';
 
-  // CORS: allow known origins
-  if (origin && allowedOrigins.some(o => origin.startsWith(o))) {
+  // --- 1️⃣ CORS Handling ---
+  const originAllowed = allowedDomains.some(d => origin.startsWith(d));
+  if (originAllowed) {
     res.header('Access-Control-Allow-Origin', origin);
-    res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.header('Access-Control-Allow-Methods', 'GET,OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Content-Type, Range, Accept');
   }
 
-  // Handle OPTIONS preflight
-  if (req.method === 'OPTIONS') {
-    res.sendStatus(200);
-    return;
-  }
+  // Preflight for browsers
+  if (req.method === 'OPTIONS') return res.sendStatus(200);
 
-  // Referer restriction (only allow from your domains)
-  const refererAllowed =
-    referer === '' || // some HLS players omit referer entirely
-    allowedOrigins.some(o => referer.startsWith(o));
+  // --- 2️⃣ Strict Referer Validation ---
+  const refererAllowed = allowedDomains.some(d => referer.startsWith(d));
 
+  // Deny if referer is missing or from elsewhere
   if (!refererAllowed) {
-    console.warn('🚫 Blocked request from invalid referer:', referer);
-    return res.status(403).send('Forbidden: Invalid referer');
+    console.warn(`🚫 Blocked unauthorized access → ${req.path} | Referer: ${referer || 'none'}`);
+    return res.status(403).send('Forbidden: Direct or unauthorized access');
   }
 
   next();
 });
+
 
 
 
@@ -310,6 +315,7 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Listening on ${PORT}`);
 });
+
 
 
 
