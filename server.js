@@ -13,34 +13,43 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 // --- CORS + Security middleware ---
-const allowedReferers = [
-  'https://players.akamai.com/',    // ✅ change to your actual site
-  'https://www.yourdomain.com',
+// --- CORS + Referer protection middleware ---
+const allowedOrigins = [
+  'https://players.akamai.com',        // 🔁 change to your actual site(s)
+  'https://players.akamai.com/',
+  'https://goat-father.onrender.com', // allow your Render domain for API fetches
 ];
 
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   const referer = req.headers.referer || '';
 
-  // CORS setup
-  if (origin && allowedReferers.some(r => origin.startsWith(r))) {
+  // CORS: allow known origins
+  if (origin && allowedOrigins.some(o => origin.startsWith(o))) {
     res.header('Access-Control-Allow-Origin', origin);
-    res.header('Access-Control-Allow-Methods', 'GET,OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Range');
+    res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Range, Accept');
   }
 
-  // Allow OPTIONS preflight
-  if (req.method === 'OPTIONS') return res.sendStatus(200);
+  // Handle OPTIONS preflight
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+    return;
+  }
 
-  // Referer restriction
-  const allowed = allowedReferers.some(r => referer.startsWith(r));
-  if (!allowed && !req.path.startsWith('/')) {
-    console.warn('Blocked unauthorized referer:', referer || 'none');
+  // Referer restriction (only allow from your domains)
+  const refererAllowed =
+    referer === '' || // some HLS players omit referer entirely
+    allowedOrigins.some(o => referer.startsWith(o));
+
+  if (!refererAllowed) {
+    console.warn('🚫 Blocked request from invalid referer:', referer);
     return res.status(403).send('Forbidden: Invalid referer');
   }
 
   next();
 });
+
 
 
 // CONFIG: set ENCRYPTION_KEY env var to a 32-byte key (hex or base64).
@@ -301,6 +310,7 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Listening on ${PORT}`);
 });
+
 
 
 
