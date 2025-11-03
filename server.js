@@ -12,6 +12,37 @@ app.use(morgan('tiny'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+// --- CORS + Security middleware ---
+const allowedReferers = [
+  'https://players.akamai.com/',    // ✅ change to your actual site
+  'https://www.yourdomain.com',
+];
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  const referer = req.headers.referer || '';
+
+  // CORS setup
+  if (origin && allowedReferers.some(r => origin.startsWith(r))) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Methods', 'GET,OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Range');
+  }
+
+  // Allow OPTIONS preflight
+  if (req.method === 'OPTIONS') return res.sendStatus(200);
+
+  // Referer restriction
+  const allowed = allowedReferers.some(r => referer.startsWith(r));
+  if (!allowed && !req.path.startsWith('/')) {
+    console.warn('Blocked unauthorized referer:', referer || 'none');
+    return res.status(403).send('Forbidden: Invalid referer');
+  }
+
+  next();
+});
+
+
 // CONFIG: set ENCRYPTION_KEY env var to a 32-byte key (hex or base64).
 // e.g. export ENCRYPTION_KEY="$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")"
 const RAW_KEY = "c27165c50236de431b5a2290171b18353fafc325d0a6bcd14cd03d1b822ad912";
@@ -270,5 +301,6 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Listening on ${PORT}`);
 });
+
 
 
