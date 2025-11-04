@@ -176,7 +176,7 @@ app.get('/cursed/stream.m3u8', async (req, res) => {
 
     const firstVideo = vkData.response.videos[0];
     const hls = firstVideo?.files?.hls_live_ondemand;
-    if (!hls) return res.status(500).json({ error: 'hls_live not available', video: firstVideo });
+    if (!hls) return res.status(500).json({ error: 'hls_live not available' });
     console.log(hls);
     // Fetch actual playlist from the source
     const response = await axios.get(hls, {
@@ -319,4 +319,5 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Listening on ${PORT}`);
 });
+
 
