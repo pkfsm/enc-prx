@@ -12,51 +12,6 @@ app.use(morgan('tiny'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// --- CORS + Security middleware ---
-// --- CORS + Referer protection middleware ---
-// --- CORS + Strict Referer Security Middleware ---
-const allowedDomains = [
-  'https://livepush.io',              // ✅ your main site
-  'https://livepush.io/',
-  'https://ikml.pages.dev',
-  'https://ikml.pages.dev/',
-  'https://bsdstreams.strangled.net',
-  'https://bsdstreams.strangled.net/',
-  'https://teachub.strangled.net',
-  'https://teachub.strangled.net/',
-  'https://goat-father.onrender.com',    // ✅ your Render domain for testing
-];
-
-app.use((req, res, next) => {
-  const origin = req.headers.origin || '';
-  const referer = req.headers.referer || '';
-
-  // --- 1️⃣ CORS Handling ---
-  const originAllowed = allowedDomains.some(d => origin.startsWith(d));
-  if (originAllowed) {
-    res.header('Access-Control-Allow-Origin', origin);
-    res.header('Access-Control-Allow-Methods', 'GET,OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Range, Accept');
-  }
-
-  // Preflight for browsers
-  if (req.method === 'OPTIONS') return res.sendStatus(200);
-
-  // --- 2️⃣ Strict Referer Validation ---
-  const refererAllowed = allowedDomains.some(d => referer.startsWith(d));
-
-  // Deny if referer is missing or from elsewhere
-  if (!refererAllowed) {
-    console.warn(`🚫 Blocked unauthorized access → ${req.path} | Referer: ${referer || 'none'}`);
-    return res.status(403).send('Forbidden: Direct or unauthorized access');
-  }
-
-  next();
-});
-
-
-
-
 // CONFIG: set ENCRYPTION_KEY env var to a 32-byte key (hex or base64).
 // e.g. export ENCRYPTION_KEY="$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")"
 const RAW_KEY = "c27165c50236de431b5a2290171b18353fafc325d0a6bcd14cd03d1b822ad912";
@@ -121,14 +76,14 @@ function resolveUrl(base, maybeRel) {
  Note: For real use, move cookies and other sensitive headers into ENV or config.
 */
 const VK_API_URL = 'https://api.vkvideo.ru/method/catalog.getVideo?v=5.265&client_id=52461373';
-const DEFAULT_VK_COOKIES = `remixrefkey=7b3e75728e7abdb9ca; remixscreen_width=1920; remixscreen_height=1080; remixscreen_dpr=1; remixscreen_depth=24; remixdark_color_scheme=1; remixcolor_scheme_mode=auto; remixdt=9000; remixstid=228649741_xI6k7gYDtaBxveuoc0gBj1NespCpT1wl4Tf8A4TkOHs; remixlang=3; tmr_lvid=ac803a5b03f008a30b4c93a224cdc203; tmr_lvidTS=1742826759925; remixvideo_menu_collapsed=0; prcl=1ac4275b918a13; _ignoreAutoLogin=1; remixscreen_orient=1; remixsf=1; remixstlid=9069202440385892893_WJQv8kTkuXYLoAs2MykQRC2nw6UQTlFbuUYQD8OiJZw; remixgp=2923d7387899feedabc7693ab2a3907f; remixcurr_audio=null; remixmaudio=null; adblock=1; remixua=43%7C-1%7C208%7C2216461059; remixscreen_winzoom=1.50; remixsts=%7B%22data%22%3A%5B%5B1762142827%2C%22web_dark_theme%22%2C%22auto%22%2C%22vkcom_dark%22%2C1%5D%2C%5B1762142827%2C%22browser_features%22%2C%22current_scheme%3A2/is_auto_schemes_supported%3A1/is_schemes_supported%3A1%22%5D%2C%5B1762142827%2C%22counters_check%22%2C1%5D%2C%5B1762142829%2C%22web_stats_request_error%22%2C1%2C%22https%3A//stats.vk-portal.net/web-stats/p%22%2Ctrue%2C0%5D%5D%2C%22uniqueId%22%3A585557539.4820567%7D`;
+const DEFAULT_VK_COOKIES = `remixrefkey=7b3e75728e7abdb9ca; remixscreen_width=1920; remixscreen_height=1080; remixscreen_dpr=1; remixscreen_depth=24; remixdark_color_scheme=1; remixcolor_scheme_mode=auto; remixdt=9000; remixstid=228649741_xI6k7gYDtaBxveuoc0gBj1NespCpT1wl4Tf8A4TkOHs; remixlang=3; tmr_lvid=ac803a5b03f008a30b4c93a224cdc203; tmr_lvidTS=1742826759925; remixvideo_menu_collapsed=0; prcl=1ac4275b918a13; _ignoreAutoLogin=1; remixscreen_orient=1; remixsf=1; remixstlid=9069202440385892893_WJQv8kTkuXYLoAs2MykQRC2nw6UQTlFbuUYQD8OiJZw; remixgp=2923d7387899feedabc7693ab2a3907f; remixcurr_audio=null; remixmaudio=null; adblock=1; remixua=43%7C-1%7C208%7C2216461059; remixscreen_winzoom=1.50; remixsts=%7B%22data%22%3A%5B%5B1762142827%2C%22web_dark_theme%22%2C%22auto%22%2C%22vkcom_dark%22%2C1%5D%2C%5B1762142827%2C%22browser_features%22%2C%22current_scheme%3A2/is_auto_schemes_supported%3A1/is_schemes_supported%3A1%22%5D%2C%5B1762142827%2C%22counters_check%22%2C1%5D%2C%5B1762142829%2C%22web_stats_request_error%22%2C1%2C%22http%3A//stats.vk-portal.net/web-stats/p%22%2Ctrue%2C0%5D%5D%2C%22uniqueId%22%3A585557539.4820567%7D`;
 
 // Example form data body you gave; modify owner_id/url/access_token as needed.
 const DEFAULT_FORM = {
   need_blocks: '1',
   owner_id: '0',
   url: 'https://vkvideo.ru/@club233604729/lives',
-  access_token: 'anonym.eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbm9ueW1faWQiOjIwOTY0NDI2NjksImFwcF9pZCI6NTI0NjEzNzMsImlhdCI6MTc2MjE0MjgzMCwiaXNfdmVyaWZpZWQiOmZhbHNlLCJleHAiOjE3NjIyMjkyMzAsInNpZ25lZF90aW1lIjpudWxsLCJhbm9ueW1faWRfbG9uZyI6OTA2OTIwMjQ0MDM4NTg5Mjg5Mywic2NvcGUiOjc4ODEyOTkzNDc4OTgzNjh9.zldVTn9VHQGIUf0hOk-ytbpGhnrRDoiDZd987dLX1bI'
+  access_token: 'anonym.eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbm9ueW1faWQiOjIwNjE1MzU3NDEsImFwcF9pZCI6NTI0NjEzNzMsImlhdCI6MTc2MjIyOTA0MiwiaXNfdmVyaWZpZWQiOmZhbHNlLCJleHAiOjE3NjIzMTU0NDIsInNpZ25lZF90aW1lIjpudWxsLCJhbm9ueW1faWRfbG9uZyI6OTA2OTIwMjQ0MDM4NTg5Mjg5Mywic2NvcGUiOjc4ODEyOTkzNDc4OTgzNjh9.9pMVhHgftb4IeYTmSx0vZ6CfrAEnjY6cdCz97V9rLzo'
 };
 
 async function fetchVkCatalog(form = DEFAULT_FORM, cookieString = DEFAULT_VK_COOKIES) {
@@ -150,14 +105,62 @@ async function fetchVkCatalog(form = DEFAULT_FORM, cookieString = DEFAULT_VK_COO
   return resp.data;
 }
 
+/* ---------- VK Anonymous Token Fetcher ---------- */
+async function getVkAnonymousToken() {
+  const url = 'https://login.vk.com/?act=get_anonym_token';
+  const headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:142.0) Gecko/20100101 Firefox/142.0',
+    'Accept': '*/*',
+    'Accept-Language': 'en-US,en;q=0.5',
+    'Accept-Encoding': 'gzip, deflate, br, zstd',
+    'Referer': 'https://vkvideo.ru/',
+    'Content-Type': 'application/x-www-form-urlencoded',
+    'Origin': 'https://vkvideo.ru',
+    'Connection': 'keep-alive',
+    'Cookie': 'remixlang=3; remixstlid=9050906657857049535_RJ6FcsXKZozNudTBYLbpDRwmKv3REalbdnISYOl8pe0; prcl=c88a224cf1c0b1',
+    'Sec-Fetch-Dest': 'empty',
+    'Sec-Fetch-Mode': 'cors',
+    'Sec-Fetch-Site': 'cross-site',
+    'Priority': 'u=4',
+  };
+
+  const body = new URLSearchParams({
+    client_secret: 'o557NLIkAErNhakXrQ7A',
+    client_id: '52461373',
+    scopes: 'audio_anonymous,video_anonymous,photos_anonymous,profile_anonymous',
+    isApiOauthAnonymEnabled: 'false',
+    version: '1',
+    app_id: '6287487',
+    access_token:
+      'anonym.eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbm9ueW1faWQiOjE3MDY1ODIyNjksImFwcF9pZCI6NTI0NjEzNzMsImlhdCI6MTc2MjIzMjkyNiwiaXNfdmVyaWZpZWQiOmZhbHNlLCJleHAiOjE3NjIzMTkzMjYsInNpZ25lZF90aW1lIjpudWxsLCJhbm9ueW1faWRfbG9uZyI6OTA1MDkwNjY1Nzg1NzA0OTUzNSwic2NvcGUiOjc4ODEyOTkzNDc4OTgzNjh9.MeN9lmhoBqcvDvdgZVyx3ISqADsNtrufwyP1DzN52eo',
+  }).toString();
+
+  const resp = await axios.post(url, body, { headers, timeout: 15000 });
+  return resp.data;
+}
+
+
 /* ---------- Endpoint: fetch VK and redirect to encrypted goat ---------- */
 app.get('/cursed/stream.m3u8', async (req, res) => {
   try {
     // Optional query overrides
     const form = { ...DEFAULT_FORM };
+
+    // Fetch fresh anonymous token
+    try {
+      const tokenData = await getVkAnonymousToken();
+      if (tokenData?.access_token) {
+        form.access_token = tokenData.access_token;
+      }
+    } catch (err) {
+      console.error('⚠️ Failed to fetch VK anon token:', err.message);
+    }
+
+    // Allow manual override via query params (optional)
     if (req.query.url) form.url = req.query.url;
     if (req.query.owner_id) form.owner_id = req.query.owner_id;
     if (req.query.access_token) form.access_token = req.query.access_token;
+
 
     const cookies = req.query.cookies || DEFAULT_VK_COOKIES;
     const vkData = await fetchVkCatalog(form, cookies);
@@ -172,9 +175,9 @@ app.get('/cursed/stream.m3u8', async (req, res) => {
     }
 
     const firstVideo = vkData.response.videos[0];
-    const hls = firstVideo?.files?.hls_live;
+    const hls = firstVideo?.files?.hls_live_ondemand;
     if (!hls) return res.status(500).json({ error: 'hls_live not available', video: firstVideo });
-
+    console.log(hls);
     // Fetch actual playlist from the source
     const response = await axios.get(hls, {
       responseType: 'text',
@@ -196,16 +199,17 @@ app.get('/cursed/stream.m3u8', async (req, res) => {
       let suffix = '';
       if (absolute.endsWith('.m3u8')) suffix = '.m3u8';
       else if (absolute.endsWith('.ts')) suffix = '.ts';
-      return `https://${req.get('host')}/goat/${enc}${suffix}`;
+      return `http://${req.get('host')}/goat/${enc}${suffix}`;
     });
 
     res.setHeader('Content-Type', 'application/vnd.apple.mpegurl; charset=utf-8');
     res.send(rewritten);
   } catch (err) {
     console.error(err.stack || err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error1: err.message });
   }
 });
+
 
 /* ---------- Endpoint: Accept arbitrary external URL and return encrypted proxy location ---------- */
 /*
@@ -219,7 +223,7 @@ app.get('/cursed/external', (req, res) => {
     // optionally validate URL
     new URL(rawUrl);
     const token = encryptText(rawUrl);
-    const proxiedUrl = `https://${req.get('host')}/goat/${token}`;
+    const proxiedUrl = `${req.protocol}://${req.get('host')}/goat/${token}`;
     res.json({ proxy: proxiedUrl });
   } catch (e) {
     res.status(400).json({ error: 'Invalid URL' });
@@ -277,7 +281,7 @@ app.get(/^\/goat\/(.+)$/, async (req, res) => {
         if (absolute.endsWith('.m3u8')) suffix = '.m3u8';
         else if (absolute.endsWith('.ts')) suffix = '.ts';
 
-        return `https://${req.get('host')}/goat/${enc}${suffix}`;
+        return `${req.protocol}://${req.get('host')}/goat/${enc}${suffix}`;
       });
 
       res.setHeader('content-type', 'application/vnd.apple.mpegurl; charset=utf-8');
@@ -315,9 +319,3 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Listening on ${PORT}`);
 });
-
-
-
-
-
-
