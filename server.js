@@ -199,7 +199,7 @@ app.get('/cursed/stream.m3u8', async (req, res) => {
       let suffix = '';
       if (absolute.endsWith('.m3u8')) suffix = '.m3u8';
       else if (absolute.endsWith('.ts')) suffix = '.ts';
-      return `http://${req.get('host')}/goat/${enc}${suffix}`;
+      return `https://${req.get('host')}/goat/${enc}${suffix}`;
     });
 
     res.setHeader('Content-Type', 'application/vnd.apple.mpegurl; charset=utf-8');
@@ -319,3 +319,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Listening on ${PORT}`);
 });
+
