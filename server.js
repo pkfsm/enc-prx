@@ -82,7 +82,7 @@ const DEFAULT_VK_COOKIES = `remixrefkey=7b3e75728e7abdb9ca; remixscreen_width=19
 const DEFAULT_FORM = {
   need_blocks: '1',
   owner_id: '0',
-  url: 'https://vkvideo.ru/@club233604729/lives',
+  url: 'https://vkvideo.ru/@id1081439512/lives',
   access_token: 'anonym.eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbm9ueW1faWQiOjIwNjE1MzU3NDEsImFwcF9pZCI6NTI0NjEzNzMsImlhdCI6MTc2MjIyOTA0MiwiaXNfdmVyaWZpZWQiOmZhbHNlLCJleHAiOjE3NjIzMTU0NDIsInNpZ25lZF90aW1lIjpudWxsLCJhbm9ueW1faWRfbG9uZyI6OTA2OTIwMjQ0MDM4NTg5Mjg5Mywic2NvcGUiOjc4ODEyOTkzNDc4OTgzNjh9.9pMVhHgftb4IeYTmSx0vZ6CfrAEnjY6cdCz97V9rLzo'
 };
 
