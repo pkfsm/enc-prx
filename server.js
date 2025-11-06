@@ -83,7 +83,7 @@ const DEFAULT_FORM = {
   need_blocks: '1',
   owner_id: '0',
   url: 'https://vkvideo.ru/@id1081439512/lives',
-  access_token: 'anonym.eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbm9ueW1faWQiOjIwNjE1MzU3NDEsImFwcF9pZCI6NTI0NjEzNzMsImlhdCI6MTc2MjIyOTA0MiwiaXNfdmVyaWZpZWQiOmZhbHNlLCJleHAiOjE3NjIzMTU0NDIsInNpZ25lZF90aW1lIjpudWxsLCJhbm9ueW1faWRfbG9uZyI6OTA2OTIwMjQ0MDM4NTg5Mjg5Mywic2NvcGUiOjc4ODEyOTkzNDc4OTgzNjh9.9pMVhHgftb4IeYTmSx0vZ6CfrAEnjY6cdCz97V9rLzo'
+  access_token: 'anonym.eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbm9ueW1faWQiOjExOTg0NDk4MDcsImFwcF9pZCI6NTI2NDk4OTYsImlhdCI6MTc2MjQwMTIzMCwiaXNfdmVyaWZpZWQiOmZhbHNlLCJleHAiOjE3NjI0ODc2MzAsInNpZ25lZF90aW1lIjpudWxsLCJhbm9ueW1faWRfbG9uZyI6OTA4MjU3MjQ0ODMwODA0NjYwOSwic2NvcGUiOjc4ODEyOTkzNDc4OTgzNjh9.l1U91KYOr5kNgn1eTDIKdNdwyn7PPM6dGDy8kzgTGx8'
 };
 
 async function fetchVkCatalog(form = DEFAULT_FORM, cookieString = DEFAULT_VK_COOKIES) {
@@ -132,7 +132,7 @@ async function getVkAnonymousToken() {
     version: '1',
     app_id: '6287487',
     access_token:
-      'anonym.eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbm9ueW1faWQiOjE3MDY1ODIyNjksImFwcF9pZCI6NTI0NjEzNzMsImlhdCI6MTc2MjIzMjkyNiwiaXNfdmVyaWZpZWQiOmZhbHNlLCJleHAiOjE3NjIzMTkzMjYsInNpZ25lZF90aW1lIjpudWxsLCJhbm9ueW1faWRfbG9uZyI6OTA1MDkwNjY1Nzg1NzA0OTUzNSwic2NvcGUiOjc4ODEyOTkzNDc4OTgzNjh9.MeN9lmhoBqcvDvdgZVyx3ISqADsNtrufwyP1DzN52eo',
+      'anonym.eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbm9ueW1faWQiOjExOTg0NDk4MDcsImFwcF9pZCI6NTI2NDk4OTYsImlhdCI6MTc2MjQwMTIzMCwiaXNfdmVyaWZpZWQiOmZhbHNlLCJleHAiOjE3NjI0ODc2MzAsInNpZ25lZF90aW1lIjpudWxsLCJhbm9ueW1faWRfbG9uZyI6OTA4MjU3MjQ0ODMwODA0NjYwOSwic2NvcGUiOjc4ODEyOTkzNDc4OTgzNjh9.l1U91KYOr5kNgn1eTDIKdNdwyn7PPM6dGDy8kzgTGx8',
   }).toString();
 
   const resp = await axios.post(url, body, { headers, timeout: 15000 });
@@ -319,5 +319,6 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Listening on ${PORT}`);
 });
+
 
 
