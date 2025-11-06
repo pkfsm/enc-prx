@@ -123,8 +123,10 @@ async function getVkAnonymousToken() {
     'Sec-Fetch-Site': 'cross-site',
     'Priority': 'u=4',
   };
-
-  const body = nonymous',
+const body = new URLSearchParams({
+    client_secret: 'o557NLIkAErNhakXrQ7A',
+    client_id: '52461373',
+    scopes: 'audio_anonymous,video_anonymous,photos_anonymous,profile_anonymous',
     isApiOauthAnonymEnabled: 'false',
     version: '1',
     app_id: '6287487',
@@ -316,6 +318,7 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Listening on ${PORT}`);
 });
+
 
 
 
