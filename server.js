@@ -145,7 +145,7 @@ app.get('/cursed/stream.m3u8', async (req, res) => {
 
     // Fetch fresh anonymous token
     try {
-      const tokenData = await getVkAnonymousToken();
+      const tokenData = "anonym.eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbm9ueW1faWQiOjExOTg0NDk4MDcsImFwcF9pZCI6NTI2NDk4OTYsImlhdCI6MTc2MjQwMTIzMCwiaXNfdmVyaWZpZWQiOmZhbHNlLCJleHAiOjE3NjI0ODc2MzAsInNpZ25lZF90aW1lIjpudWxsLCJhbm9ueW1faWRfbG9uZyI6OTA4MjU3MjQ0ODMwODA0NjYwOSwic2NvcGUiOjc4ODEyOTkzNDc4OTgzNjh9.l1U91KYOr5kNgn1eTDIKdNdwyn7PPM6dGDy8kzgTGx8";
       if (tokenData?.access_token) {
         form.access_token = tokenData.access_token;
       }
@@ -316,5 +316,6 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Listening on ${PORT}`);
 });
+
 
 
